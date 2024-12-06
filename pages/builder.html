@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ui-to-bot</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+        body {
+            font-family: "Manrope", sans-serif;
+            background-color: black;
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="palette">
+        <h2>blocks</h2>
+        <div class="block" draggable="true" data-type="loginBot" data-info='{"token":"YOUR_BOT_TOKEN"}'>Login Bot</div>
+        <div class="block" draggable="true" data-type="sendMessage" data-info='{"channelId":"CHANNEL_ID","content":"Hello from the bot!"}'>Send Message</div>
+        <div class="block" draggable="true" data-type="createSlashCommand" data-info='{"name":"ping","description":"Replies with pong"}'>Create Slash Command</div>
+        <div class="block" draggable="true" data-type="onMessage" data-info='{"trigger":"!hello","response":"Hello there!"}'>On Message Command</div>
+        <div class="block" draggable="true" data-type="guildMemberAdd" data-info='{"welcomeChannelId":"WELCOME_CHANNEL_ID","message":"Welcome to the server!"}'>On Guild Member Add</div>
+        <div class="block" draggable="true" data-type="setActivity" data-info='{"activityType":"PLAYING","activityName":"My Awesome Game"}'>Set Bot Activity</div>
+        <div class="block" draggable="true" data-type="onReactionAdd" data-info='{"emoji":"👍","response":"Thanks for the thumbs up!"}'>On Reaction Add</div>
+        <div class="block" draggable="true" data-type="onReactionRemove" data-info='{"emoji":"👍","response":"Reaction removed!"}'>On Reaction Remove</div>
+        <div class="block" draggable="true" data-type="onMessageDelete" data-info='{"noticeChannelId":"CHANNEL_ID"}'>On Message Delete</div>
+        <div class="block" draggable="true" data-type="guildMemberRemove" data-info='{"farewellChannelId":"CHANNEL_ID","farewellMessage":"{user} has left the server."}'>On Guild Member Remove</div>
+    </div>
+
+    <div id="workspace">
+        <h2>workspace</h2>
+        <p>drag blocks here to build your bot logic:</p>
+        <div id="drop-zone"></div>
+    </div>
+
+    <div id="code-area">
+        <h2>generated code</h2>
+        <div id="generated-code"></div>
+        <button id="generate-btn">generate code</button>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById("drop-zone");
+        const generatedCodeEl = document.getElementById("generated-code");
+        const generateBtn = document.getElementById("generate-btn");
+
+        let currentDraggedBlock = null;
+        let droppedBlocks = [];
+
+        document.querySelectorAll(".block").forEach((block) => {
+            block.addEventListener("dragstart", (e) => {
+                currentDraggedBlock = block;
+                e.dataTransfer.effectAllowed = "move";
+            });
+        });
+
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            if (currentDraggedBlock) {
+                const type = currentDraggedBlock.getAttribute("data-type");
+                const info = JSON.parse(currentDraggedBlock.getAttribute("data-info"));
+                addDroppedBlock(type, info);
+            }
+        });
+
+        function addDroppedBlock(type, info) {
+            const blockEl = document.createElement("div");
+            blockEl.classList.add("dropped-block");
+            blockEl.innerHTML = `
+            <strong>${type}</strong>
+            <button class="remove-button">X</button>
+            <pre style="font-size:12px;">${JSON.stringify(info, null, 2)}</pre>
+            `;
+
+            blockEl.querySelector(".remove-button").addEventListener("click", () => {
+                blockEl.remove();
+                droppedBlocks = droppedBlocks.filter((b) => b.el !== blockEl);
+            });
+            dropZone.appendChild(blockEl);
+            droppedBlocks.push({
+                type,
+                info,
+                el: blockEl
+            });
+        }
+
+        generateBtn.addEventListener("click", () => {
+            const actualToken = localStorage.getItem("token");
+            const code = generateCodeFromBlocks(droppedBlocks, actualToken);
+            generatedCodeEl.textContent = code;
+        });
+
+        function generateCodeFromBlocks(blocks, actualToken) {
+            let code = `const { Client, Intents } = require('discord.js');
+const client = new Client({ intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS] });
+
+`;
+
+            let hasLogin = false;
+
+            for (const block of blocks) {
+                switch (block.type) {
+                    case "loginBot":
+                        code += `client.login("${actualToken}");\n\n`;
+                        hasLogin = true;
+                        break;
+
+                    case "sendMessage":
+                        code += `client.once('ready', () => {
+    const channel = client.channels.cache.get("${block.info.channelId}");
+    if (channel) channel.send("${block.info.content}");
+});\n\n`;
+                        break;
+
+                    case "createSlashCommand":
+                        code += `client.once('ready', async () => {
+    const guild = client.guilds.cache.first();
+    if (guild) {
+        await guild.commands.create({
+            name: "${block.info.name}",
+            description: "${block.info.description}"
+        });
+    }
+});\n\n
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+    if (interaction.commandName === '${block.info.name}') {
+        await interaction.reply('Pong!');
+    }
+});\n\n`;
+                        break;
+
+                    case "onMessage":
+                        code += `client.on('messageCreate', (message) => {
+    if (message.content === "${block.info.trigger}") {
+        message.channel.send("${block.info.response}");
+    }
+});\n\n`;
+                        break;
+
+                    case "guildMemberAdd":
+                        code += `client.on('guildMemberAdd', member => {
+    const channel = member.guild.channels.cache.get("${block.info.welcomeChannelId}");
+    if (channel) channel.send("${block.info.message}".replace("{user}", "<@" + member.id + ">"));
+});\n\n`;
+                        break;
+
+                    case "setActivity":
+                        code += `client.once('ready', () => {
+    client.user.setActivity("${block.info.activityName}", { type: "${block.info.activityType}" });
+});\n\n`;
+                        break;
+
+                    case "onReactionAdd":
+                        code += `client.on('messageReactionAdd', (reaction, user) => {
+    if (reaction.emoji.name === "${block.info.emoji}" && !user.bot) {
+        reaction.message.reply("${block.info.response}");
+    }
+});\n\n`;
+                        break;
+
+                    case "onReactionRemove":
+                        code += `client.on('messageReactionRemove', (reaction, user) => {
+    if (reaction.emoji.name === "${block.info.emoji}" && !user.bot) {
+        reaction.message.reply("${block.info.response}");
+    }
+});\n\n`;
+                        break;
+
+                    case "onMessageDelete":
+                        code += `client.on('messageDelete', (message) => {
+    const channel = message.guild?.channels.cache.get("${block.info.noticeChannelId}");
+    if (channel) channel.send(\`A message by \${message.author?.tag || "someone"} was deleted.\`);
+});\n\n`;
+                        break;
+
+                    case "guildMemberRemove":
+                        code += `client.on('guildMemberRemove', member => {
+    const channel = member.guild.channels.cache.get("${block.info.farewellChannelId}");
+    if (channel) channel.send("${block.info.farewellMessage}".replace("{user}", member.user.tag));
+});\n\n`;
+                        break;
+
+                    default:
+                        code += `// Unrecognized block: ${block.type}\n`;
+                }
+            }
+
+            if (!hasLogin) {
+                code += `// Note: You haven't added a login block. The bot won't start.\n`;
+            }
+
+            return code;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: black;
+    color: white;
+}
+
+#header {
+    font-size: 55px;
+    text-align: center;
+}
+
+#subtext {
+    text-align: center;
+    font-size: 35px;
+}
+
+#start {
+    outline: none;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: white;
+    padding: 10px;
+    font-size: 20px;
+    background-color: black;
+    color: white;
+    width: 20%;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+}
+
+#buttonss {
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+}
+
+#subtextyap {
+    text-align: center;
+    font-size: 20px;
+}
+
+#bottoken {
+    outline: none;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: white;
+    padding: 10px;
+    font-size: 20px;
+    background-color: black;
+    color: white;
+    font-family: 'Manrope', sans-serif;
+    cursor: text;
+}
+
+#setupbtn {
+    outline: none;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: white;
+    padding: 10px;
+    font-size: 20px;
+    background-color: black;
+    color: white;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+}
+
+#palette {
+    width: 20%;
+    background: #1a1a1a;
+    border-right: 1px solid #333;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+#workspace {
+    width: 50%;
+    border-right: 1px solid #333;
+    padding: 10px;
+    position: relative;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+#code-area {
+    width: 30%;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: #0e0e0e;
+}
+
+h2, h3 {
+    font-weight: 600;
+    margin-top: 0;
+}
+
+.block {
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: grab;
+}
+
+.block:hover {
+    background: #333;
+}
+
+#drop-zone {
+    min-height: 100px;
+    border: 2px dashed #555;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.dropped-block {
+    background: #343434;
+    border: 1px solid #444;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+}
+
+.dropped-block .remove-button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    background: #900;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    color: white;
+    padding: 2px 5px;
+    font-size: 10px;
+}
+
+#generated-code {
+    flex: 1;
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 5px;
+    width: 100%;
+    color: #0f0;
+    font-family: monospace;
+    padding: 10px;
+    overflow-y: auto;
+    white-space: pre;
+}
+
+#generate-btn {
+    outline: none;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: white;
+    padding: 10px;
+    font-size: 20px;
+    background-color: black;
+    color: white;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
